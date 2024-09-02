@@ -277,3 +277,28 @@ document.querySelector('.controls').appendChild(text3);
         isDragging = false;
     });
 });
+
+canvas.addEventListener('touchstart', (event) => {
+    const touch = event.touches[0];
+    startX = touch.clientX - offsetX;
+    startY = touch.clientY - offsetY;
+    isDragging = true;
+});
+
+canvas.addEventListener('touchmove', (event) => {
+    if (isDragging) {
+        const touch = event.touches[0];
+        offsetX = touch.clientX - startX;
+        offsetY = touch.clientY - startY;
+        drawImages();
+    }
+    event.preventDefault(); // Предотвращает прокрутку страницы при перемещении
+});
+
+canvas.addEventListener('touchend', () => {
+    isDragging = false;
+});
+
+canvas.addEventListener('touchcancel', () => {
+    isDragging = false;
+});
