@@ -278,15 +278,57 @@ document.querySelector('.controls').appendChild(text3);
     });
 });
 
+let initialDistance = 0;
+let initialScale = scale;
+
 canvas.addEventListener('touchstart', (event) => {
-    const touch = event.touches[0];
-    startX = touch.clientX - offsetX;
-    startY = touch.clientY - offsetY;
-    isDragging = true;
+    if (event.touches.length === 2) {
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+
+        initialDistance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+
+        initialScale = scale;
+    } else {
+        const touch = event.touches[0];
+        startX = touch.clientX - offsetX;
+        startY = touch.clientY - offsetY;
+        isDragging = true;
+    }
 });
 
 canvas.addEventListener('touchmove', (event) => {
-    if (isDragging) {
+    if (event.touches.length === 2) {
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+
+        const currentDistance = Math.hypot(
+            touch2.clientX - touch1.clientX,
+            touch2.clientY - touch1.clientY
+        );
+
+        const scaleChange = currentDistance / initialDistance;
+        const newScale = Math.min(Math.max(0.125, initialScale * scaleChange), 4);
+
+        // Центр масштабирования
+        const centerX = (touch1.clientX + touch2.clientX) / 2;
+        const centerY = (touch1.clientY + touch2.clientY) / 2;
+
+        // Позиция центра в координатах холста
+        const canvasX = (centerX - offsetX) / scale;
+        const canvasY = (centerY - offsetY) / scale;
+
+        // Обновляем смещение с учетом нового масштаба
+        offsetX -= canvasX * (newScale - scale);
+        offsetY -= canvasY * (newScale - scale);
+
+        scale = newScale;
+
+        drawImages();
+    } else if (isDragging) {
         const touch = event.touches[0];
         offsetX = touch.clientX - startX;
         offsetY = touch.clientY - startY;
@@ -297,8 +339,5 @@ canvas.addEventListener('touchmove', (event) => {
 
 canvas.addEventListener('touchend', () => {
     isDragging = false;
-});
-
-canvas.addEventListener('touchcancel', () => {
-    isDragging = false;
+    initialDistance = 0;
 });
